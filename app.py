@@ -7,6 +7,7 @@ import plotly.express as px
 import tensorflow as tf
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+import os
 
 st.set_page_config(
     page_title="Prediksi Harga Saham",
@@ -15,26 +16,29 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Membaca dataset
 datas = pd.read_excel('Dataset.xlsx')
 
-X = datas[['Tertinggi','Terendah']]
+# Normalisasi data
+X = datas[['Tertinggi', 'Terendah']]
 y = datas['Penutupan']
-scaler = MinMaxScaler(feature_range=(0,1))
+scaler = MinMaxScaler(feature_range=(0, 1))
 X_scaled = scaler.fit_transform(X)
 y_scaled = scaler.fit_transform(y.values.reshape(-1, 1))
 
+# Sidebar menu
 with st.sidebar:
     selected = sac.menu([
         sac.MenuItem('Home', icon="house"),
-        sac.MenuItem('Datasset', icon='database-add',
-                     children=[
-                         sac.MenuItem('Dataset', icon='database'),
-                         sac.MenuItem('Data Normalisasi', icon='activity'),
-                         sac.MenuItem('Pola Inputan dan Target', icon='bi bi-database-fill-down'),
-                    ]),
+        sac.MenuItem('Datasset', icon='database-add', children=[
+            sac.MenuItem('Dataset', icon='database'),
+            sac.MenuItem('Data Normalisasi', icon='activity'),
+            sac.MenuItem('Pola Inputan dan Target', icon='bi bi-database-fill-down'),
+        ]),
         sac.MenuItem('Prediksi', icon="bi bi-bar-chart-line-fill")
     ], open_all=False)
 
+# Halaman Home
 if selected == "Home":
     col1, col2, col3 = st.columns([1, 10, 1])
     with col3:
@@ -45,17 +49,16 @@ if selected == "Home":
     st.subheader("Single Layer Percpetron")
     st.write("Single layer perceptron adalah model Artificial Neural Network yang melalui pembelajaran pengawasan pada sistem jaringan saraf. Model Single Layer Percpetron  memiliki satu lapisan input (input layer) dan satu lapisan output (output layer) tanpa lapisan tersembunyi (hidden layer)")
 
-
+# Halaman Dataset
 if selected == "Dataset":
     st.title("Dataset")
     st.write("Berikut adalah dataset atau data aktual yang digunakan untuk prediksi harga penutupan saham Bank BCA. ")
     st.subheader("Grafik Dataset")
     st.line_chart(datas)
     st.subheader("Tabel Dataset")
-    st.dataframe(datas.rename(columns={'Tertinggi': 'Harga Tertinggi',
-                                        'Terendah': 'Harga Terendah',
-                                        'Penutupan': 'Harga Penutupan'}), width=700, hide_index=True)
+    st.dataframe(datas.rename(columns={'Tertinggi': 'Harga Tertinggi', 'Terendah': 'Harga Terendah', 'Penutupan': 'Harga Penutupan'}), width=700, hide_index=True)
 
+# Halaman Data Normalisasi
 if selected == "Data Normalisasi":
     st.title("Data Normalisasi")
     st.write("Data Normalisasi adalah proses mengubah skala data aktual atau asli ke rentang nilai antara 0 dan 1. Berikut adalah hasil Normalisasi Data : ")
@@ -64,14 +67,16 @@ if selected == "Data Normalisasi":
     st.dataframe(scaled_datas, width=700, hide_index=True)
     st.line_chart(scaled_datas)
 
+# Halaman Pola Inputan dan Target
 if selected == "Pola Inputan dan Target":
     st.title("Pola Inputan dan Target")
-    st.write("Harga tertinggi sebagai inputan X1, harga terendah sebagai inputan X2 dan harga penutupan sebagai Y atau target.")
+    st.write("Harga tertinggi sebagai inputan X1, harga terendah sebagai inputan X2 dan harga penutupan sebagai Y atau target.")
     st.write("Proses prediksi melibatkan data X1 dan X2 yang sudah dinormalisasi sebagai input. Untuk mengembalikan angka hasil prediksi menjadi nilai asli, dilakukan proses denormalisasi")
     scaled_datas = pd.DataFrame(X_scaled, columns=['X1', 'X2'])
     scaled_datas['Y'] = y_scaled
     st.dataframe(scaled_datas, width=700, hide_index=True)
 
+# Halaman Prediksi
 if selected == "Prediksi":
     st.title("Prediksi")
     tertinggi = st.number_input("Saham Tertinggi", min_value=1, max_value=1000000, step=1)
@@ -79,6 +84,12 @@ if selected == "Prediksi":
     if st.button("Prediksi"):
         data_input = np.array([[tertinggi, terendah]])
         custom_objects = {'mse': tf.keras.losses.MeanSquaredError()}
-        model = tf.keras.models.load_model('skripsi-app/model.h5', custom_objects=custom_objects)
-        hasil = model.predict(data_input)
-        st.subheader(f"Prediksi Penutupan Saham: {int(hasil[0][0])}")
+
+        # Cek apakah file model ada
+        model_path = 'skripsi-app/model.h5'
+        if os.path.exists(model_path):
+            model = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
+            hasil = model.predict(data_input)
+            st.subheader(f"Prediksi Penutupan Saham: {int(hasil[0][0])}")
+        else:
+            st.error(f"Model file '{model_path}' not found. Please ensure the model file exists at the specified path.")
