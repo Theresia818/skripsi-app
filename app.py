@@ -86,7 +86,7 @@ if selected == "Prediksi":
         custom_objects = {'mse': tf.keras.losses.MeanSquaredError()}
 
         # Cek apakah file model ada
-        model_path = 'skripsi-app/model.h5'
+        model_path = 'Model.h5'
         if os.path.exists(model_path):
             model = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
             hasil = model.predict(data_input)
