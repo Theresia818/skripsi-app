@@ -4,4 +4,4 @@ scikit-learn
 tensorflow
 matplotlib
 streamlit-option-menu
-streamlit_antd_components as sac
+streamlit_antd_components
