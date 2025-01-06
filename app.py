@@ -79,6 +79,6 @@ if selected == "Prediksi":
     if st.button("Prediksi"):
         data_input = np.array([[tertinggi, terendah]])
         custom_objects = {'mse': tf.keras.losses.MeanSquaredError()}
-        model = tf.keras.models.load_model('models/model.h5', custom_objects=custom_objects)
+        model = tf.keras.models.load_model('skripsi-app/model.h5', custom_objects=custom_objects)
         hasil = model.predict(data_input)
         st.subheader(f"Prediksi Penutupan Saham: {int(hasil[0][0])}")
