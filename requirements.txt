@@ -6,3 +6,4 @@ matplotlib
 streamlit-option-menu
 streamlit_antd_components
 plotly
+openpyxl
